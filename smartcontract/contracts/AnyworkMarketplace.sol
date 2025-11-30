@@ -49,7 +49,7 @@ contract AnyworkMarketplace {
 
     struct Artisan {
         bool registered;
-        bool verified;
+        bool verified;     // Simple verification status
         string metadataURI; // optional off-chain profile data (IPFS/URL)
     }
 
@@ -58,6 +58,7 @@ contract AnyworkMarketplace {
     event ArtisanRegistered(address indexed artisan, string metadataURI);
     event ArtisanUpdated(address indexed artisan, string metadataURI);
     event ArtisanVerificationUpdated(address indexed artisan, bool verified);
+    event IdentityVerified(address indexed artisan, uint256 timestamp);
 
     /// @notice Register the caller as an artisan.
     /// @param metadataURI A URI pointing to off-chain profile data (can be empty).
@@ -83,9 +84,19 @@ contract AnyworkMarketplace {
         emit ArtisanVerificationUpdated(artisan, verified);
     }
 
+    /// @notice Simple function for artisans to verify their identity
+    /// @dev This would be called after off-chain verification is complete
+    function verifyIdentity() external {
+        require(artisans[msg.sender].registered, "Register as artisan first");
+        require(!artisans[msg.sender].verified, "Already verified");
+        
+        artisans[msg.sender].verified = true;
+        emit IdentityVerified(msg.sender, block.timestamp);
+    }
+
     // --- Jobs ---
 
-enum JobStatus { Active, Completed, Withdrawn, ClaimedByArtisan, Disputed, Cancelled }
+    enum JobStatus { Active, Completed, Withdrawn, ClaimedByArtisan, Disputed, Cancelled }
 
     struct Job {
         address client;

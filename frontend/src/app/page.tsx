@@ -1,4 +1,5 @@
 import { WalletConnectButton } from "@/components/WalletConnectButton";
+import { ArtisanOnboarding } from "@/components/ArtisanOnboarding";
 
 export default function Home() {
   return (
@@ -39,7 +40,7 @@ export default function Home() {
                   Find Artisans
                 </a>
                 <a
-                  href="#"
+                  href="#artisan-onboarding"
                   className="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-blue-600 bg-white hover:bg-gray-50 sm:px-8"
                 >
                   Register as Artisan
@@ -108,6 +109,11 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Artisan onboarding / Self Protocol flow */}
+      <section className="max-w-3xl mx-auto px-4 pb-16 sm:px-6 lg:px-8">
+        <ArtisanOnboarding />
       </section>
     </div>
   );
