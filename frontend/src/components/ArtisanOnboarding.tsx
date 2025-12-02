@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAccount } from "wagmi";
 import { useMarketplace } from "@/hooks/useMarketplace";
+import { SelfVerificationWidget } from "./SelfVerificationWidget";
 
 export const ArtisanOnboarding = () => {
   const { address, isConnected } = useAccount();
@@ -15,7 +16,6 @@ export const ArtisanOnboarding = () => {
 
   const [loadingStep, setLoadingStep] = useState<
     | "register"
-    | "self-verify"
     | "onchain-verify"
     | "refresh-status"
     | null
@@ -27,6 +27,7 @@ export const ArtisanOnboarding = () => {
     verified: boolean;
     metadataURI: string;
   } | null>(null);
+  const [selfVerified, setSelfVerified] = useState(false);
 
   const handleRegister = async () => {
     if (!address) return;
@@ -42,26 +43,6 @@ export const ArtisanOnboarding = () => {
     } catch (err: any) {
       console.error(err);
       setError(err?.message || "Failed to register artisan");
-    } finally {
-      setLoadingStep(null);
-    }
-  };
-
-  const handleSelfVerification = async () => {
-    try {
-      setError(null);
-      setStatusMessage(null);
-      setLoadingStep("self-verify");
-      // Placeholder for Self Protocol integration
-      // Here you would:
-      // 1. Redirect/open Self widget/flow
-      // 2. Wait for verification result
-      // 3. Store verification proof off-chain (e.g. in your backend)
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStatusMessage("Self Protocol verification simulated (placeholder).");
-    } catch (err: any) {
-      console.error(err);
-      setError(err?.message || "Self verification failed");
     } finally {
       setLoadingStep(null);
     }
@@ -145,18 +126,19 @@ export const ArtisanOnboarding = () => {
             Step 2: Self Protocol verification (off-chain)
           </h3>
           <p className="text-xs text-gray-500 mb-2">
-            This is where we will integrate the Self Protocol identity flow. For
-            now, this button simulates a successful verification.
+            Scan the QR code below with the Self app to complete your identity
+            verification. Once successful, you can confirm it on-chain in Step 3.
           </p>
-          <button
-            onClick={handleSelfVerification}
-            disabled={loadingStep !== null}
-            className="rounded-md bg-purple-600 px-3 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50"
-          >
-            {loadingStep === "self-verify"
-              ? "Running Self verification..."
-              : "Simulate Self verification"}
-          </button>
+          <SelfVerificationWidget
+            onSuccess={() => {
+              setSelfVerified(true);
+              setStatusMessage("Self verification completed via Self app.");
+            }}
+            onError={(message) => {
+              setSelfVerified(false);
+              setError(message);
+            }}
+          />
         </div>
 
         <div className="pt-3 border-t border-gray-200">
@@ -172,12 +154,14 @@ export const ArtisanOnboarding = () => {
           </p>
           <button
             onClick={handleOnChainVerify}
-            disabled={!isReady || loadingStep !== null}
+            disabled={!isReady || !selfVerified || loadingStep !== null}
             className="rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
           >
             {loadingStep === "onchain-verify"
               ? "Submitting tx..."
-              : "Verify on-chain"}
+              : selfVerified
+              ? "Verify on-chain"
+              : "Complete Self verification first"}
           </button>
         </div>
 
